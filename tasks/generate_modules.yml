@@ -1,0 +1,51 @@
+---
+- name: Generate private key
+  openssl_privatekey:
+    path: "{{ ssl_certs_privkey_path }}"
+    passphrase: "{{ ssl_certs_passphrase }}"
+    cipher: des3
+    owner: "{{ ssl_certs_path_owner }}"
+    group: "{{ ssl_certs_path_group }}"
+    force: True
+  delegate_to: 127.0.0.1
+
+- name: Generate a Certificate Sign Request
+  openssl_csr:
+    path: "{{ ssl_certs_csr_path }}"
+    owner: "{{ ssl_certs_path_owner }}"
+    group: "{{ ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+    privatekey_path: "{{ ssl_certs_privkey_path }}"
+    privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+    country_name: "{{ ssl_certs_country }}"
+    locality_name: "{{ ssl_certs_locality }}"
+    organization_name: "{{ ssl_certs_organization }}"
+    organizational_unit_name: "{{ ssl_certs_organizational_unit }}"
+    common_name: "{{ ssl_certs_common_name }}"
+    email_address: "{{ ssl_certs_email }}"
+  delegate_to: 127.0.0.1
+
+- name: Generate an OpenSSL certificate signed by our CA
+  openssl_certificate:
+    path: "{{ ssl_certs_cert_path }}"
+    privatekey_path: "{{ ssl_certs_privkey_path }}"
+    privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+    csr_path: "{{ ssl_certs_csr_path }}"
+    provider: ownca
+    ownca_path: "{{ ssl_certs_ca_cert_path }}"
+    ownca_privatekey_path: "{{ ssl_certs_ca_privatekey_path }}"
+    ownca_privatekey_passphrase: "{{ ssl_certs_ca_passphrase }}"
+    force: yes
+  delegate_to: 127.0.0.1
+
+- name: Verify that an existing certificate was issued by the our root CA and is currently still valid
+  openssl_certificate:
+    path: "{{ ssl_certs_cert_path }}"
+    provider: assertonly
+    issuer:
+      C: "{{ ssl_certs_ca_country }}"
+      L: "{{ ssl_certs_ca_locality }}"
+      O: "{{ ssl_certs_ca_organization }}"
+      OU: "{{ ssl_certs_ca_organizational_unit }}"
+    has_expired: False
+  delegate_to: 127.0.0.1

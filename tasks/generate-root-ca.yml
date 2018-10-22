@@ -1,0 +1,53 @@
+ # This tasks are not currently used! They are used in playbook.
+ # Most probably this will be used via import/include from playbook
+ ---
+ - name: Generate local CA key
+    openssl_privatekey:
+      path: "{{ ssl_certs_ca_privatekey_path }}"
+      passphrase: "{{ ssl_certs_ca_passphrase }}"
+      cipher: des3
+      owner: "{{ ssl_certs_path_owner }}"
+      group: "{{ ssl_certs_path_group }}"
+      force: True
+
+  - name: Generate a Certificate Sign Request
+    openssl_csr:
+      path: "{{ ssl_certs_ca_csr_path }}"
+      owner: "{{ ssl_certs_path_owner }}"
+      group: "{{ ssl_certs_path_group }}"
+      mode: "{{ ssl_certs_mode }}"
+      privatekey_path: "{{ ssl_certs_ca_privatekey_path }}"
+      privatekey_passphrase: "{{ ssl_certs_ca_passphrase }}"
+      country_name: "{{ ssl_certs_country }}"
+      locality_name: "{{ ssl_certs_locality }}"
+      organization_name: "{{ ssl_certs_organization }}"
+      organizational_unit_name: "{{ ssl_certs_organizational_unit }}"
+      common_name: "{{ ssl_certs_common_name }}"
+      email_address: "{{ ssl_certs_email }}"
+
+  # TODO use module for this instead?!
+  #- name: Create local CA certificate
+  #  run_once: True
+  #  expect:
+  #    command: "openssl req -x509 -new -nodes -key {{ ssl_certs_ca_privatekey_path }} -sha256 -days 2048 -out {{ ssl_certs_ca_cert_path }} -subj '{{ ssl_certs_fields }}'"
+  #    responses:
+  #      "Enter pass phrase for .*": "{{ ssl_certs_ca_passphrase }}"
+  #  delegate_to: 127.0.0.1
+
+  - name: Generate a self-signed OpenSSL CA certificate
+    run_once: True
+    local_action:
+      module: "openssl_certificate"
+      path: "{{ ssl_certs_ca_cert_path }}"
+      privatekey_path: "{{ ssl_certs_ca_privatekey_path }}"
+      privatekey_passphrase: "{{ ssl_certs_ca_passphrase }}"
+      csr_path: "{{ ssl_certs_csr_path }}"
+      provider: selfsigned
+      #    subject: "{{ ssl_certs_fields }}"
+      subject:
+        C: "{{ ssl_certs_country }}"
+        L: "{{ ssl_certs_locality }}"
+        O: "{{ ssl_certs_organization }}"
+        OU: "{{ ssl_certs_organizational_unit }}"
+        CN: "{{ ssl_certs_common_name }}"
+      force: yes
