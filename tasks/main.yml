@@ -28,41 +28,29 @@
 
   - include: generate_modules.yml
 
-#  ==== REUSE ====
-# Copy key, crt, (?)CA.crt/prm(?)
-  - name: Copy SSL private key file (if exists)
+  - name: Copy SSL private key to node
     copy:
-      src: "{{ ssl_certs_local_privkey_path }}"
+      src: "{{ ssl_certs_privkey_path }}"
       dest: "{{ amq_ssl_key_path }}"
-      owner: "{{ ssl_certs_path_owner }}"
-      group: "{{ ssl_certs_path_group }}"
+      owner: "{{ amq_ssl_certs_path_owner }}"
+      group: "{{ amq_ssl_certs_path_group }}"
       mode: "{{ ssl_certs_mode }}"
-      force: "{{ ssl_certs_force_replace }}"
+      force: true
 
-#  - name: Copy SSL certificate file (if exists)
-#    copy:
-#      src: "{{ ssl_certs_local_cert_path }}"
-#      dest: "{{ ssl_certs_cert_path }}"
-#      owner: "{{ ssl_certs_path_owner }}"
-#      group: "{{ ssl_certs_path_group }}"
-#      mode: "{{ ssl_certs_mode }}"
-#      force: "{{ ssl_certs_force_replace }}"
-#    when: >
-#      ( stat_cert.stat.exists )
-#      and ( ssl_certs_local_cert_data == '' )
-#    tags: [ssl-certs,configuration]
+  - name: Copy signed SSL certificate file
+    copy:
+      src: "{{ ssl_certs_cert_path }}"
+      dest: "{{ amq_ssl_cert_path }}"
+      owner: "{{ amq_ssl_certs_path_owner }}"
+      group: "{{ amq_ssl_certs_path_group }}"
+      mode: "{{ ssl_certs_mode }}"
+      force: true
 
-
-
-
-#  - name: Generate strong DHE parameter - https://weakdh.org/
-#    command: openssl dhparam -dsaparam -out {{ssl_certs_dhparam_path}} {{ssl_certs_dhparam_size}} creates={{ssl_certs_dhparam_path}}
-#    when: ssl_certs_generate_dh_param
-#    tags: [ssl-certs,configuration]
-#
-#  - name: Combine key and cert
-#    assemble:
-#      dest: "{{ ssl_certs_combined_path }}"
-#      src: "{{ ssl_certs_path }}"
-#      regexp: "({{ ssl_certs_privkey_path | basename }}|{{ ssl_certs_cert_path | basename }})"
-#    tags: [ssl-certs,configuration]
+  - name: Copy CA certificate file
+    copy:
+      src: "{{ ssl_certs_ca_cert_path }}"
+      dest: "{{ amq_ssl_ca_cert_path }}"
+      owner: "{{ amq_ssl_certs_path_owner }}"
+      group: "{{ amq_ssl_certs_path_group }}"
+      mode: "{{ ssl_certs_mode }}"
+      force: true

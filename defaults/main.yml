@@ -32,3 +32,10 @@ ssl_certs_combined_path: "{{ ssl_certs_path }}/{{ ssl_certs_common_name }}.combi
 ssl_certs_mode: "0700"
 
 ssl_certs_key_size: "2048"
+
+# Paths to copy files into local directories
+amq_ssl_key_path: "/etc/ssl/{{ ansible_fqdn }}"
+amq_ssl_cert_path: "/etc/ssl/{{ ansible_fqdn }}"
+amq_ssl_ca_cert_path: "/etc/ssl/{{ ansible_fqdn }}"
+amq_ssl_certs_path_owner: "jamq"
+amq_ssl_certs_path_group: "jamq"
