@@ -1,9 +1,6 @@
 ---
   - name: Prepare node environment
-    include_tasks: install-dependencies.yml
-
-  - debug:
-      msg: "owner: {{ ssl_certs_path_owner }} group: {{ ssl_certs_path_group }} path: {{ ssl_certs_privkey_path }}"
+    include_tasks: install_dependencies.yml
 
   - name: Generate private key
     openssl_privatekey:
@@ -33,11 +30,11 @@
 
   - name: Generate certificates signed by our CA
     when: amq_ssl_certs_self_signed == False
-    include: generate-ca-signed.yml
+    include: generate_ca_signed.yml
 
   - name: Generate selfsigned certificate
     when: amq_ssl_certs_self_signed == True
-    include: generate-self-signed.yml
+    include: generate_self_signed.yml
 
   - name: Copy SSL private key to node
     when: amq_copy_generated_files == True
@@ -68,3 +65,7 @@
       group: "{{ amq_ssl_certs_path_group }}"
       mode: "{{ ssl_certs_mode }}"
       force: true
+
+  - name: Add certificate & key to local keystore
+    when: amq_keytool_enabled == True
+    include: keytool.yml

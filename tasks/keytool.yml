@@ -1,0 +1,29 @@
+---
+- debug:
+    msg: "certificate: {{ amq_ssl_cert_path }} private_key: {{ amq_ssl_key_path }} password: {{ ssl_certs_passphrase }} dest: {{ amq_keystore_path }}"
+
+#- name: Create new keystore
+#  java_keystore:
+#    name: "amq-cert"
+#    certificate: "{{ amq_ssl_cert_path }}"
+#    private_key: "{{ amq_ssl_key_path }}"
+#    password: "{{ ssl_certs_passphrase }}"
+#    dest: "{{ amq_keystore_path }}"
+#    force: yes
+#
+- name: Create new keystore from provided certificate
+  java_cert:
+    cert_alias: "amq-cert"
+    cert_path: "{{ amq_ssl_cert_path }}"
+    keystore_create: true
+    keystore_path: "{{ amq_keystore_path }}"
+    keystore_pass: "{{ amq_keystore_password }}"
+
+- name: Create new truststore with provided CA certificate
+  when: amq_ssl_certs_self_signed == False
+  java_cert:
+    cert_alias: "amq-cert"
+    cert_path: "{{ amq_ssl_ca_cert_path }}"
+    keystore_create: true
+    keystore_path: "{{ amq_truststore_path }}"
+    keystore_pass: "{{ amq_truststore_password }}"
