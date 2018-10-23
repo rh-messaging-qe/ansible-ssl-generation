@@ -40,6 +40,7 @@
     include: generate-self-signed.yml
 
   - name: Copy SSL private key to node
+    when: amq_copy_generated_files == True
     copy:
       src: "{{ ssl_certs_privkey_path }}"
       dest: "{{ amq_ssl_key_path }}"
@@ -49,6 +50,7 @@
       force: true
 
   - name: Copy signed SSL certificate file
+    when: amq_copy_generated_files == True
     copy:
       src: "{{ ssl_certs_cert_path }}"
       dest: "{{ amq_ssl_cert_path }}"
@@ -58,7 +60,7 @@
       force: true
 
   - name: Copy CA certificate file
-    when: amq_ssl_certs_self_signed == False
+    when: amq_copy_generated_files == True and amq_ssl_certs_self_signed == False
     copy:
       src: "{{ ssl_certs_ca_cert_path }}"
       dest: "{{ amq_ssl_ca_cert_path }}"
