@@ -1,32 +1,43 @@
 ---
-  - name: Ensure OpenSSL is installed
-    package: name=openssl state=present
-    tags: [ssl-certs,packages]
+  - name: Prepare node environment
+    include_tasks: install-dependencies.yml
+
+  - debug:
+      msg: "owner: {{ ssl_certs_path_owner }} group: {{ ssl_certs_path_group }} path: {{ ssl_certs_privkey_path }}"
+
+  - name: Generate private key
+    openssl_privatekey:
+      path: "{{ ssl_certs_privkey_path }}"
+      passphrase: "{{ ssl_certs_passphrase }}"
+      cipher: des3
+      owner: "{{ ssl_certs_path_owner }}"
+      group: "{{ ssl_certs_path_group }}"
+      force: True
     delegate_to: 127.0.0.1
 
-
-  - name: Ensure pip dependencies are present
-    pip:
-      name: "{{ item }}"
-      state: latest
-      extra_args: --user
-    with_items:
-      - pyopenssl
-      - pexpect
-    delegate_to: 127.0.0.1
-
-
-  - name: Ensure ssl folder exist
-    file:
-      path: "{{ ssl_certs_path }}"
-      state: directory
+  - name: Generate a Certificate Sign Request
+    openssl_csr:
+      path: "{{ ssl_certs_csr_path }}"
       owner: "{{ ssl_certs_path_owner }}"
       group: "{{ ssl_certs_path_group }}"
       mode: "{{ ssl_certs_mode }}"
-    tags: [ssl-certs,configuration]
+      privatekey_path: "{{ ssl_certs_privkey_path }}"
+      privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+      country_name: "{{ ssl_certs_country }}"
+      locality_name: "{{ ssl_certs_locality }}"
+      organization_name: "{{ ssl_certs_organization }}"
+      organizational_unit_name: "{{ ssl_certs_organizational_unit }}"
+      common_name: "{{ ssl_certs_common_name }}"
+      email_address: "{{ ssl_certs_email }}"
     delegate_to: 127.0.0.1
 
-  - include: generate_modules.yml
+  - name: Generate certificates signed by our CA
+    when: amq_ssl_certs_self_signed == False
+    include: generate-ca-signed.yml
+
+  - name: Generate selfsigned certificate
+    when: amq_ssl_certs_self_signed == True
+    include: generate-self-signed.yml
 
   - name: Copy SSL private key to node
     copy:
@@ -47,6 +58,7 @@
       force: true
 
   - name: Copy CA certificate file
+    when: amq_ssl_certs_self_signed == False
     copy:
       src: "{{ ssl_certs_ca_cert_path }}"
       dest: "{{ amq_ssl_ca_cert_path }}"

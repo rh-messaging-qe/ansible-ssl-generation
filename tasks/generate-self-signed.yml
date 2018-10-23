@@ -1,0 +1,23 @@
+---
+- name: Generate an OpenSSL self-signed certificate
+  openssl_certificate:
+    path: "{{ ssl_certs_cert_path }}"
+    privatekey_path: "{{ ssl_certs_privkey_path }}"
+    privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+    csr_path: "{{ ssl_certs_csr_path }}"
+    provider: selfsigned
+    force: yes
+  delegate_to: 127.0.0.1
+
+- name: Verify that an existing certificate was self-issued and is currently still valid
+  openssl_certificate:
+    path: "{{ ssl_certs_cert_path }}"
+    provider: assertonly
+    issuer:
+      C: "{{ ssl_certs_country }}"
+      L: "{{ ssl_certs_locality }}"
+      O: "{{ ssl_certs_organization }}"
+      OU: "{{ ssl_certs_organizational_unit }}"
+      CN: "{{ ssl_certs_common_name }}"
+    has_expired: False
+  delegate_to: 127.0.0.1
