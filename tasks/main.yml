@@ -26,6 +26,9 @@
       organizational_unit_name: "{{ ssl_certs_organizational_unit }}"
       common_name: "{{ ssl_certs_common_name }}"
       email_address: "{{ ssl_certs_email }}"
+      subject_alt_name:
+      - "DNS:{{ ansible_fqdn }}"
+      - "IP:{{ ansible_default_ipv4.address }}"
     delegate_to: 127.0.0.1
 
   - name: Generate certificates signed by our CA
@@ -36,35 +39,29 @@
     when: amq_ssl_certs_self_signed == True
     include: generate_self_signed.yml
 
-  - name: Copy SSL private key to node
-    when: amq_copy_generated_files == True
-    copy:
-      src: "{{ ssl_certs_privkey_path }}"
-      dest: "{{ amq_ssl_key_path }}"
-      owner: "{{ amq_ssl_certs_path_owner }}"
-      group: "{{ amq_ssl_certs_path_group }}"
-      mode: "{{ ssl_certs_mode }}"
-      force: true
+  - debug:
+      msg: "path: {{ ssl_cert_pkcs12_path }}
+                  passphrase: {{ amq_keystore_password }}
+                  friendly_name: {{ amq_ssl_cert_pkcs12_name_alias }}
+                  privatekey_path: {{ ssl_certs_privkey_path }}
+                  privatekey_passphrase: {{ ssl_certs_passphrase }}
+                  certificate_path: {{ ssl_certs_csr_path }} "
 
-  - name: Copy signed SSL certificate file
-    when: amq_copy_generated_files == True
-    copy:
-      src: "{{ ssl_certs_cert_path }}"
-      dest: "{{ amq_ssl_cert_path }}"
-      owner: "{{ amq_ssl_certs_path_owner }}"
-      group: "{{ amq_ssl_certs_path_group }}"
-      mode: "{{ ssl_certs_mode }}"
-      force: true
+  - name: Generate PKCS12 file
+    openssl_pkcs12:
+      action: export
+      path: "{{ ssl_cert_pkcs12_path }}"
+      passphrase: "{{ amq_keystore_password }}"
+      friendly_name: "{{ amq_ssl_cert_pkcs12_name_alias }}"
+      privatekey_path: "{{ ssl_certs_privkey_path }}"
+      privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+      certificate_path: "{{ ssl_certs_cert_path }}"
+      force: yes
+    delegate_to: 127.0.0.1
 
-  - name: Copy CA certificate file
-    when: amq_copy_generated_files == True and amq_ssl_certs_self_signed == False
-    copy:
-      src: "{{ ssl_certs_ca_cert_path }}"
-      dest: "{{ amq_ssl_ca_cert_path }}"
-      owner: "{{ amq_ssl_certs_path_owner }}"
-      group: "{{ amq_ssl_certs_path_group }}"
-      mode: "{{ ssl_certs_mode }}"
-      force: true
+  - name: Copy generated SSL files to remote nodes
+    when: amq_copy_generated_files == True
+    include: distribute_files.yml
 
   - name: Add certificate & key to local keystore
     when: amq_keytool_enabled == True

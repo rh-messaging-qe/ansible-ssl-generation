@@ -1,7 +1,6 @@
 ---
 - name: Ensure OpenSSL is installed
   package: name=openssl state=present
-  tags: [ssl-certs,packages]
   delegate_to: 127.0.0.1
 
 - name: Ensure pip dependencies are present
@@ -12,12 +11,11 @@
     extra_args: --user
   delegate_to: 127.0.0.1
 
-- name: Ensure ssl folder exist
+- name: Ensure local ssl folder exist
   file:
     path: "{{ ssl_certs_path }}"
     state: directory
     owner: "{{ ssl_certs_path_owner }}"
     group: "{{ ssl_certs_path_group }}"
     mode: "{{ ssl_certs_mode }}"
-  tags: [ssl-certs,configuration]
   delegate_to: 127.0.0.1

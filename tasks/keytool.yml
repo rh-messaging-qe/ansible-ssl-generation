@@ -2,28 +2,60 @@
 - debug:
     msg: "certificate: {{ amq_ssl_cert_path }} private_key: {{ amq_ssl_key_path }} password: {{ ssl_certs_passphrase }} dest: {{ amq_keystore_path }}"
 
-#- name: Create new keystore
-#  java_keystore:
-#    name: "amq-cert"
-#    certificate: "{{ amq_ssl_cert_path }}"
-#    private_key: "{{ amq_ssl_key_path }}"
-#    password: "{{ ssl_certs_passphrase }}"
-#    dest: "{{ amq_keystore_path }}"
-#    force: yes
+- name: Remove keystore
+  file:
+    state: absent
+    path: "{{ amq_keystore_path }}"
+  ignore_errors: True
+
+- name: Remove truststore
+  file:
+    state: absent
+    path: "{{ amq_truststore_path }}"
+  ignore_errors: True
 #
-- name: Create new keystore from provided certificate
+#- name: Generate PKCS12 file
+#  openssl_pkcs12:
+#    action: export
+#    path: "{{ amq_ssl_cert_pkcs12_path }}"
+#    passphrase: "{{ amq_keystore_password }}"
+#    friendly_name: "{{ amq_ssl_cert_pkcs12_name_alias }}"
+#    privatekey_path: "{{ amq_ssl_key_path }}"
+#    privatekey_passphrase: "{{ ssl_certs_passphrase }}"
+#    certificate_path: "{{ amq_ssl_cert_path }}"
+#    owner: "{{ amq_ssl_certs_path_owner }}"
+#    force: yes
+
+- name: Create new keystore by importing pkcs12 keystore of node
   java_cert:
-    cert_alias: "amq-cert"
-    cert_path: "{{ amq_ssl_cert_path }}"
-    keystore_create: true
+    pkcs12_path: "{{ amq_ssl_cert_pkcs12_path }}"
+    pkcs12_password: "{{ amq_keystore_password }}"
+    pkcs12_alias : "{{ amq_ssl_cert_pkcs12_name_alias }}"
     keystore_path: "{{ amq_keystore_path }}"
     keystore_pass: "{{ amq_keystore_password }}"
+    keystore_create: yes
+    state: present
 
-- name: Create new truststore with provided CA certificate
-  when: amq_ssl_certs_self_signed == False
+- name: Create new truststore by importing CA cert
   java_cert:
-    cert_alias: "amq-cert"
     cert_path: "{{ amq_ssl_ca_cert_path }}"
-    keystore_create: true
+    cert_alias: "{{ amq_ssl_cert_pkcs12_name_alias }}"
     keystore_path: "{{ amq_truststore_path }}"
     keystore_pass: "{{ amq_truststore_password }}"
+    keystore_create: yes
+    state: present
+
+
+#openssl pkcs12 -export -name amq-cert -in /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.pem -inkey /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.key -out /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.p12 -passout pass:keystorePass -passin pass:MySecretPass
+#keytool -importkeystore -destkeystore /etc/ssl/amq.keystore -deststorepass keystorePass -srckeystore /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.p12 -srcstoretype PKCS12 -srcstorepass keystorePass
+#keytool -importcert --file /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/root-ca.crt -keystore /etc/ssl/amq.truststore -storepass truststorePass -noprompt -alias ca -keypass truststorePass
+#java -Djavax.net.debug=SSL,handshake -jar /var/dtests/node_data/clients/acce.jar sender --log-msgs dict --broker 10.37.145.217:61618 --address lalaQ --conn-ssl-keystore-location /etc/ssl/amq.keystore --conn-ssl-keystore-password keystorePass  --conn-ssl-truststore-location /etc/ssl/amq.truststore --conn-ssl-truststore-password truststorePass --log-lib debug
+
+#Create PKCS12 (p12=key+x509 cert)
+#openssl pkcs12 -export -name amq-cert -in /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.pem -inkey /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.key -out /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.p12 -passout pass:keystorePass -passin pass:MySecretPass
+#
+#Import node cert to keystore
+#keytool -importkeystore -destkeystore /etc/ssl/amq.keystore -deststorepass keystorePass -srckeystore /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/dhcp-145-218.lab.eng.brq.redhat.com.p12 -srcstoretype PKCS12 -srcstorepass lala
+#
+#Import CA to trust store
+#keytool -importcert --file /etc/ssl/dhcp-145-218.lab.eng.brq.redhat.com/root-ca.crt -keystore /etc/ssl/amq.truststore -storepass truststorePass -noprompt -alias ca
