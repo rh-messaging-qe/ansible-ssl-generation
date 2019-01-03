@@ -4,12 +4,12 @@ Role Name
 This role creates Certificate Authority certificate and key on 'localhost' and signs per host specific certificate.
 These signed certificates and private keys (along with Certificate Sign Request) are copied into given node.
 
-See defaults variables for details like used password, locations, subject/issuer information etc.
+See default variables for details like used password, locations, subject/issuer information etc.
 
 Requirements
 ------------
 
-None.
+Ansible 2.7+
 
 Usage
 ------

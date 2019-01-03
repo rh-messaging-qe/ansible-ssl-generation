@@ -15,6 +15,7 @@
   file:
     path: "{{ ssl_certs_path }}"
     state: directory
+    # Is this relevant? Can't this be removed?
     owner: "{{ ssl_certs_path_owner }}"
     group: "{{ ssl_certs_path_group }}"
     mode: "{{ ssl_certs_mode }}"

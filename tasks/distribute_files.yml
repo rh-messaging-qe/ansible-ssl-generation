@@ -1,0 +1,46 @@
+---
+
+- name: Ensure remote SSL folder exist
+  file:
+    path: "{{ amq_ssl_dir_path }}"
+    state: directory
+    owner: "{{ amq_ssl_certs_path_owner }}"
+    group: "{{ amq_ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+
+- name: "Copy SSL private key to node {{ amq_ssl_key_path }}"
+  copy:
+    src: "{{ ssl_certs_privkey_path }}"
+    dest: "{{ amq_ssl_key_path }}"
+    owner: "{{ amq_ssl_certs_path_owner }}"
+    group: "{{ amq_ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+    force: true
+
+- name: Copy signed SSL certificate file
+  copy:
+    src: "{{ ssl_certs_cert_path }}"
+    dest: "{{ amq_ssl_cert_path }}"
+    owner: "{{ amq_ssl_certs_path_owner }}"
+    group: "{{ amq_ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+    force: true
+
+- name: Copy PKCS12 certificate bundle file
+  copy:
+    src: "{{ ssl_cert_pkcs12_path }}"
+    dest: "{{ amq_ssl_cert_pkcs12_path }}"
+    owner: "{{ amq_ssl_certs_path_owner }}"
+    group: "{{ amq_ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+    force: true
+
+- name: Copy CA certificate file
+  when: amq_ssl_certs_self_signed == False
+  copy:
+    src: "{{ ssl_certs_ca_cert_path }}"
+    dest: "{{ amq_ssl_ca_cert_path }}"
+    owner: "{{ amq_ssl_certs_path_owner }}"
+    group: "{{ amq_ssl_certs_path_group }}"
+    mode: "{{ ssl_certs_mode }}"
+    force: true
