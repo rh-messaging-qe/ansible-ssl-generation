@@ -7,16 +7,12 @@
       path: "{{ ssl_certs_privkey_path }}"
       passphrase: "{{ ssl_certs_passphrase }}"
       cipher: des3
-      owner: "{{ ssl_certs_path_owner }}"
-      group: "{{ ssl_certs_path_group }}"
       force: True
     delegate_to: 127.0.0.1
 
   - name: Generate a Certificate Sign Request
     openssl_csr:
       path: "{{ ssl_certs_csr_path }}"
-      owner: "{{ ssl_certs_path_owner }}"
-      group: "{{ ssl_certs_path_group }}"
       mode: "{{ ssl_certs_mode }}"
       privatekey_path: "{{ ssl_certs_privkey_path }}"
       privatekey_passphrase: "{{ ssl_certs_passphrase }}"

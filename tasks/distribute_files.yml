@@ -1,12 +1,11 @@
 ---
-
 - name: Ensure remote SSL folder exist
   file:
     path: "{{ amq_ssl_dir_path }}"
     state: directory
     owner: "{{ amq_ssl_certs_path_owner }}"
     group: "{{ amq_ssl_certs_path_group }}"
-    mode: "{{ ssl_certs_mode }}"
+    mode: "0700"
 
 - name: "Copy SSL private key to node {{ amq_ssl_key_path }}"
   copy:
@@ -32,7 +31,7 @@
     dest: "{{ amq_ssl_cert_pkcs12_path }}"
     owner: "{{ amq_ssl_certs_path_owner }}"
     group: "{{ amq_ssl_certs_path_group }}"
-    mode: "{{ ssl_certs_mode }}"
+    mode: "0644"
     force: true
 
 - name: Copy CA certificate file

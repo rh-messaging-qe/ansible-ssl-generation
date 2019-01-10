@@ -3,8 +3,6 @@
   file:
     path: "{{ ssl_certs_ca_path }}"
     state: directory
-    owner: "{{ ssl_certs_path_owner }}"
-    group: "{{ ssl_certs_path_group }}"
     mode: "{{ ssl_certs_mode }}"
 
 - name: Generate local CA key
@@ -13,8 +11,6 @@
     path: "{{ ssl_certs_ca_privatekey_path }}"
     passphrase: "{{ ssl_certs_ca_passphrase }}"
     cipher: des3
-    owner: "{{ ssl_certs_path_owner }}"
-    group: "{{ ssl_certs_path_group }}"
     force: True
 
 
@@ -22,8 +18,6 @@
   when: amq_ssl_certs_self_signed is defined and amq_ssl_certs_self_signed == False
   openssl_csr:
     path: "{{ ssl_certs_ca_csr_path }}"
-    owner: "{{ ssl_certs_path_owner }}"
-    group: "{{ ssl_certs_path_group }}"
     mode: "{{ ssl_certs_mode }}"
     privatekey_path: "{{ ssl_certs_ca_privatekey_path }}"
     privatekey_passphrase: "{{ ssl_certs_ca_passphrase }}"
