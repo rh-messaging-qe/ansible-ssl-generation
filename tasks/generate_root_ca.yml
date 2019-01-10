@@ -3,7 +3,7 @@
   file:
     path: "{{ ssl_certs_ca_path }}"
     state: directory
-    mode: "{{ ssl_certs_mode }}"
+    mode: "0755"
 
 - name: Generate local CA key
   when: amq_ssl_certs_self_signed is defined and amq_ssl_certs_self_signed == False

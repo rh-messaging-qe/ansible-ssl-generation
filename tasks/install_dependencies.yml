@@ -15,5 +15,5 @@
   file:
     path: "{{ ssl_certs_path }}"
     state: directory
-    mode: "{{ ssl_certs_mode }}"
+    mode: "0755"
   delegate_to: 127.0.0.1

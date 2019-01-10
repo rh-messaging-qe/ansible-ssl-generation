@@ -66,6 +66,6 @@
   - name: Create README file with location and passwords
     when: amq_keytool_enabled == true
     template:
-      src: templates/readme_template.j2
-      dest: "{{ amq_ssl_dir_path }}/readme"
+      src: templates/ssl_info_template.j2
+      dest: "{{ amq_ssl_dir_path }}/ssl_info"
       mode: 0644
