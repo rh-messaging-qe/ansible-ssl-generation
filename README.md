@@ -5,6 +5,7 @@ This role creates Certificate Authority certificate and key on 'localhost' and s
 These signed certificates and private keys (along with Certificate Sign Request) are copied into given node.
 
 See default variables for details like used password, locations, subject/issuer information etc.
+Some useful information, like locations and passwords, is generated on each host into "{{ amq_ssl_dir_path }}/readme".
 
 Requirements
 ------------
@@ -36,3 +37,8 @@ Use this role with a playbook defined like this:
 ```
 
 This role is to be used with [ansible-broker-clusters/playbooks/gen-ssl](https://github.com/msgqe/ansible-broker-clusters/tree/master/playbooks/gen-ssl) for start.
+
+Recommended execution via playbook is using following command.
+```
+ansible-playbook -i ansible-broker-clusters/dynamic-inventory.py -u root ansible-broker-clusters/playbooks/gen-ssl/provision.yml -e @/Users/mtoth/work/repos/ansible-broker-clusters/playbooks/gen-ssl/defaults/main.yml
+```
